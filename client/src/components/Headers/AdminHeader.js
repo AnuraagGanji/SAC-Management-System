@@ -5,10 +5,13 @@ import Container from "react-bootstrap/Container";
 import { Link } from "react-router-dom";
 
 export default function AdminHeader(props) {
+  function handleClick() {
+    localStorage.removeItem("accessToken");
+  }
   return (
     <Navbar bg="light" expand="lg">
       <Container>
-        <Navbar.Brand as={Link} to="/">
+        <Navbar.Brand as={Link} to={`/admindash/${props.room}`}>
           SAC
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -23,8 +26,16 @@ export default function AdminHeader(props) {
             <Nav.Link as={Link} to={`/admindash/${props.room}/editPersonLimit`}>
               Edit Person Limit
             </Nav.Link>
-            <Nav.Link as={Link} to="//TODO">
-              Logout
+            <Nav.Link as={Link} to={`/admindash/${props.room}/profile`}>
+              Profile
+            </Nav.Link>
+            <Nav.Link as={Link} to="/adminlogin">
+              <button
+                onClick={handleClick}
+                style={{ borderStyle: "none", opacity: 0.6 }}
+              >
+                Logout
+              </button>
             </Nav.Link>
           </Nav>
         </Navbar.Collapse>

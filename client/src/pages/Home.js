@@ -1,28 +1,41 @@
 // This page shows the summary of each room
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Headers/Header";
 import RoomCard from "../components/RoomCard/RoomCard";
+import Row from "react-bootstrap/Row";
+import Axios from "axios";
 
 export default function Home() {
-  const rooms = [
-    { name: "Gym", current: 10, capacity: 30, registrationReq: true },
-    { name: "Badminton", current: 8, capacity: 8, registrationReq: false },
-    { name: "VM322", current: 2, capacity: 10, registrationReq: true },
-  ];
+  // const rooms = [
+  //   { Name: "Gym", Current: 10, Capacity: 30, registrationReq: true },
+  //   { Name: "Badminton", Current: 8, Capacity: 8, registrationReq: false },
+  //   { Name: "VM322", Current: 2, Capacity: 10, registrationReq: true },
+  // ];
+
+  const [rooms, setRooms] = useState([]);
+
+  useEffect(() => {
+    Axios.get("http://localhost:2000/api/home").then((response) => {
+      setRooms(response.data);
+      console.log(rooms);
+    });
+  }, []);
 
   return (
     <div>
       <Header />
       <div className="studentCards">
-        {rooms.map((room) => (
-          <RoomCard
-            key="//TODO"
-            name={room.name}
-            current={room.current}
-            capacity={room.capacity}
-            registrationReq={false}
-          />
-        ))}
+        <Row xs={1} md={2}>
+          {rooms.map((room) => (
+            <RoomCard
+              key={room.RoomID}
+              name={room.Name}
+              current={room.Current}
+              capacity={room.Capacity}
+              registrationReq={false}
+            />
+          ))}
+        </Row>
       </div>
     </div>
   );

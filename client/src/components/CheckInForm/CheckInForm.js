@@ -14,7 +14,7 @@ export default function CheckInForm(props) {
 
   function handleSubmit(event) {
     // event.preventDefault();
-    Axios.post("http://localhost:2000/checkin", {
+    Axios.post(`http://localhost:2000/${props.action}`, {
       bitsID: bitsID,
       room: props.room,
     }).then((response) => console.log(response));
@@ -22,7 +22,6 @@ export default function CheckInForm(props) {
 
   return (
     <div className="Login">
-      <h2 className="roomTitle">{capitalize(props.room)}</h2>
       <Form onSubmit={handleSubmit}>
         <Form.Group size="lg" controlId="bitsID">
           <Form.Label>BITS ID: </Form.Label>
@@ -40,7 +39,7 @@ export default function CheckInForm(props) {
           type="submit"
           disabled={!validateForm()}
         >
-          Check In
+          {props.button}
         </Button>
       </Form>
     </div>

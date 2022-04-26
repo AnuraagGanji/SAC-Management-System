@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import AdminHeader from "../components/Headers/AdminHeader";
+import React, { useEffect, useState } from "react";
+import StudentHeader from "../components/Headers/StudentHeader";
 import HistoryTable from "../components/Table/HistoryTable";
 import Axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-export default function AdminHistory(props) {
+export default function StudentHistory(props) {
   let navigate = useNavigate();
-  const { room } = useParams();
 
   const dummyData = [
     {
@@ -17,28 +16,12 @@ export default function AdminHistory(props) {
       checkIn: "11:34 AM Wednesday, April 18, 2022",
       checkOut: "12:40 AM Wednesday, April 18, 2022",
     },
-    {
-      fName: "Jane",
-      lName: "Doe",
-      bitsID: "f20200000",
-      room: "Badminton",
-      checkIn: "1:12 AM Wednesday, April 17, 2022",
-      checkOut: "2:00 AM Wednesday, April 17, 2022",
-    },
-    {
-      fName: "lul",
-      lName: "aao",
-      bitsID: "f20200420",
-      room: "VM322",
-      checkIn: "12:12 AM Wednesday, April 18, 2022",
-      checkOut: "2:00 AM Wednesday, April 18, 2022",
-    },
   ];
 
-  const [history, setHistory] = useState(dummyData);
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    Axios.get("http://localhost:2000/api/adminhistory", {
+    Axios.get("http://localhost:2000/api/studenthistory", {
       headers: {
         accessToken: localStorage.getItem("accessToken"),
       },
@@ -59,7 +42,7 @@ export default function AdminHistory(props) {
 
   return (
     <div>
-      <AdminHeader room={room} />
+      <StudentHeader />
       <HistoryTable historyList={history} />;
     </div>
   );

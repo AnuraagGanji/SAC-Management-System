@@ -1,13 +1,60 @@
-import React from "react";
+import Axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import StudentHeader from "../components/Headers/StudentHeader";
 import RoomCard from "../components/RoomCard/RoomCard";
 
 export default function StudentDash() {
+  let navigate = useNavigate();
   const rooms = [
-    { name: "Gym", current: 10, capacity: 30, registrationReq: true },
+    {
+      name: "Gym",
+      current: 10,
+      capacity: 30,
+      registrationReq: true,
+      registered: true,
+      cost: 700,
+    },
     { name: "Badminton", current: 8, capacity: 8, registrationReq: false },
-    { name: "VM322", current: 2, capacity: 10, registrationReq: true },
+    {
+      name: "VM322",
+      current: 2,
+      capacity: 10,
+      registrationReq: true,
+      registered: false,
+      cost: 500,
+    },
   ];
+  // const dummyData = {
+  //   name: "Gym",
+  //   current: 0,
+  //   capacity: 0,
+  //   registrationReq: true,
+  //   registered: true,
+  //   cost: 0,
+  // };
+  // const [rooms, setRooms] = useState([]);
+
+  // useEffect(() => {
+  //   console.log("into useEffect");
+  //   Axios.get("http://localhost:2000/api/studentdash", {
+  //     headers: {
+  //       accessToken: localStorage.getItem("accessToken"),
+  //     },
+  //   }).then((response) => {
+  //     // console.log("something");
+  //     if (response.data.error) {
+  //       console.log(response.data.error);
+  //       // alert(response.data.error); // Why doesn't this give me the error which I set in middleware
+  //       alert("Please log in");
+  //       navigate("../login");
+  //     } else {
+  //       // console.log("yay");
+  //       console.log(response);
+  //       // setRooms(response.data);
+  //     }
+  //   });
+  // }, []);
 
   return (
     <div>
@@ -15,11 +62,13 @@ export default function StudentDash() {
       <div className="studentCards">
         {rooms.map((room) => (
           <RoomCard
-            key="//TODO"
+            key={room.id}
             name={room.name}
             current={room.current}
             capacity={room.capacity}
             registrationReq={room.registrationReq}
+            registered={room.registered}
+            cost={room.cost}
           />
         ))}
       </div>

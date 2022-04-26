@@ -20,9 +20,9 @@ export default function ListTable(props) {
             <td>{index + 1}</td>
             <td>{user.fName}</td>
             <td>{user.lName}</td>
-            <td>{user.bitsID}</td>
-            <td>{user.checkInTime}</td>
-            <td>{user.remainingTime}</td>
+            <td>{user.bitsmail}</td>
+            <td>{user.CheckIn}</td>
+            <td>{user.TimeLeft}</td>
           </tr>
         ))}
       </tbody>

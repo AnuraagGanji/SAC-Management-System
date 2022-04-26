@@ -17,4 +17,11 @@
     margin-bottom: 2%;
     text-align: center;
   }
+
+  .forms {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+  }
 }
