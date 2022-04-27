@@ -50,12 +50,10 @@ export default function AdminDash() {
         accessToken: localStorage.getItem("accessToken"),
       },
     }).then((response) => {
-      console.log("something");
       if (response.data.error) {
-        alert("Please log in");
         navigate("../adminlogin");
+        alert("Please log in");
       } else {
-        console.log(response.data);
         setUsers(response.data);
       }
     });

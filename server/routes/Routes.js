@@ -45,13 +45,13 @@ router.post("/createUser", (req, res) => {
   });
 });
 
-// API for creating admins
+// API for creating admins (not in main app)
 router.post("/createAdmin", (req, res) => {
+  // TODO in frontend
   const { id, fName, lName, DOB, Address, password } = req.body;
   bcrypt.hash(password, saltRounds).then((hash) => {
     try {
       db.query(
-        // Why does vscode say await is unnecessary here?
         "INSERT INTO sacdb.admins (fName, lName, DOB, Address, password) VALUES (?, ?, ?, ?, ?)",
         [fName, lName, DOB, Address, hash],
         (err, result) => {
@@ -162,13 +162,17 @@ router.get("/home", (req, res) => {
 router.get("/studentdash", validateUserToken, (req, res) => {
   try {
     const bitsmail = req.user.id;
-    db.query("SELECT * FROM sacdb.users", [bitsmail], (err, result) => {
-      if (err) {
-        res.json({ error: "databsse gone" });
-      } else {
-        res.json(result);
+    db.query(
+      "SELECT name,id,personLimit AS capacity,current,!ISNULL(bitsmail) AS registered, cost FROM (SELECT cost, name,rooms.roomid AS id,personlimit,COUNT(bitsmail) AS current FROM rooms LEFT JOIN users ON rooms.RoomID=users.roomID GROUP BY rooms.roomid) AS t LEFT JOIN registered ON t.id=registered.roomid AND registered.bitsmail=?",
+      [bitsmail],
+      (err, result) => {
+        if (err) {
+          res.json({ error: err });
+        } else {
+          res.json(result);
+        }
       }
-    });
+    );
   } catch (err) {
     console.log(err);
   }
@@ -235,14 +239,18 @@ router.get("/admindash", validateAdminToken, (req, res) => {
 router.get("/studenthistory", validateUserToken, (req, res) => {
   try {
     const bitsmail = req.user.id;
-    // TODO Query to get data
-    db.query("SELECT * FROM sacdb.users", [bitsmail], (err, result) => {
-      if (err) {
-        res.json({ error: "lummmmm ded" });
-      } else {
-        res.json(result);
+    // TODO get date in readable format
+    db.query(
+      "SELECT id, bitsmail as bitsID, fName, lName, RoomName as room, CheckIn as checkIn, CheckOut as checkOut FROM sacdb.history WHERE bitsmail=?",
+      [bitsmail],
+      (err, result) => {
+        if (err) {
+          res.json({ error: err });
+        } else {
+          res.json(result);
+        }
       }
-    });
+    );
   } catch (err) {
     console.log(err);
   }
@@ -251,40 +259,166 @@ router.get("/studenthistory", validateUserToken, (req, res) => {
 // API to get admin history data
 router.get("/adminhistory", validateAdminToken, (req, res) => {
   try {
-    // TODO Query to get data
-    db.query("SELECT * FROM sacdb.history", (err, result) => {
-      if (err) {
-        res.json({ error: "lummmmm ded" });
-      } else {
-        res.json(result);
+    // TODO get time in readable format
+    db.query(
+      "SELECT id, bitsmail as bitsID, fName, lName, RoomName as room, CheckIn as checkIn, CheckOut as checkOut FROM sacdb.history",
+      (err, result) => {
+        if (err) {
+          res.json({ error: err });
+        } else {
+          res.json(result);
+        }
       }
-    });
+    );
   } catch (err) {
     console.log(err);
   }
 });
 
 // API to check-in a user
-router.get("/checkin", validateAdminToken, (req, res) => {
+router.post("/checkin", validateAdminToken, (req, res) => {
   const { room } = req.user;
   const { bitsID } = req.body;
   try {
-    db.query("", [bitsID, room], (err, result) => {
-      // TODO
-    });
+    db.query(
+      "SELECT count(*) >= r.PersonLimit AS cntlimit, r.RoomID FROM sacdb.users AS u RIGHT JOIN sacdb.rooms AS r ON r.RoomID=u.RoomID WHERE r.Name=?",
+      [room],
+      (err, result1) => {
+        if (err) {
+          res.json({ error: err });
+        }
+        if (result1[0].cntlimit) {
+          res.json({
+            error:
+              "Person limit of the room exceeded. Please wait till someone checks out!",
+          });
+        } else {
+          const roomid = result1[0].RoomID;
+          db.query(
+            "SELECT u.RoomID IS NULL AS free FROM sacdb.users AS u WHERE u.bitsmail=?",
+            [bitsID],
+            (err, result2) => {
+              if (err) {
+                res.json({ error: err });
+              }
+              if (!result2[0].free) {
+                res.json({
+                  error:
+                    "User is already checked into another room. Check out before checking into other rooms",
+                });
+              } else {
+                db.query(
+                  "SELECT !ISNULL(bitsmail) OR t.TimeLimit='0:00:00' AS registered FROM (SELECT TimeLimit,rooms.roomid AS id FROM rooms LEFT JOIN users ON rooms.RoomID=users.roomID GROUP BY rooms.roomid) AS t LEFT JOIN registered ON t.id=registered.roomid AND registered.bitsmail=? WHERE t.id=?",
+                  [bitsID, roomid],
+                  (err, result3) => {
+                    if (err) {
+                      res.json({ error: err });
+                    }
+                    if (!result3[0].registered) {
+                      res.json({ error: "User not registered" });
+                    } else {
+                      db.query(
+                        "UPDATE sacdb.users SET CheckIn=NOW(), RoomID=? WHERE bitsmail=?",
+                        [roomid, bitsID],
+                        (err, result) => {
+                          if (err) {
+                            res.json({ error: err });
+                          }
+                          res.json(result);
+                        }
+                      );
+                    }
+                  }
+                );
+              }
+            }
+          );
+        }
+      }
+    );
   } catch (err) {
     console.log(err);
   }
 });
 
 // API to checkout a user
-router.get("/checkout", validateAdminToken, (req, res) => {
+router.post("/checkout", validateAdminToken, (req, res) => {
   const { room } = req.user;
   const { bitsID } = req.body;
   try {
-    db.query("", [bitsID, room], (err, result) => {
-      // TODO
-    });
+    db.query(
+      "SELECT RoomID FROM sacdb.rooms WHERE Name=?",
+      [room],
+      (err, result) => {
+        // TODO
+        if (err) {
+          res.json({ error: err });
+        }
+        const roomid = result[0].RoomID;
+        db.query(
+          "INSERT INTO sacdb.history (bitsmail, fName, lName, RoomID, RoomName, CheckIn, CheckOut) (SELECT bitsmail, fName, lName, r.RoomID, Name, CheckIn, NOW() FROM sacdb.users AS u LEFT JOIN sacdb.rooms AS r ON r.RoomID=u.RoomID WHERE bitsmail=? AND u.RoomID=?)",
+          [bitsID, roomid],
+          (err, result) => {
+            if (err) {
+              res.json({ error: err });
+            }
+            db.query(
+              "UPDATE sacdb.users SET CheckIn=NULL, RoomID=NULL WHERE bitsmail=? AND RoomID=?",
+              [bitsID, roomid],
+              (err, result) => {
+                if (err) {
+                  res.json({ error: err });
+                } else if (result.affectedRows === 0) {
+                  res.json({
+                    error: "Cannot checkout a user who is not in the room!",
+                  });
+                } else res.json(result);
+              }
+            );
+          }
+        );
+      }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// API to change person limit of a room
+router.post("/editPersonLimit", validateAdminToken, (req, res) => {
+  const { room } = req.user;
+  const { personLimit } = req.body;
+  try {
+    db.query(
+      "UPDATE sacdb.rooms SET PersonLimit=? WHERE Name=?;",
+      [personLimit, room],
+      (err, result) => {
+        if (err) {
+          res.json({ error: err });
+        }
+        res.send(result);
+      }
+    );
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// API to register for a room (student)
+router.post("/registerRoom", validateUserToken, (req, res) => {
+  const { room } = req.body;
+  const { id } = req.user;
+  try {
+    db.query(
+      "INSERT INTO sacdb.registered (bitsmail, RoomID) SELECT ?, RoomID FROM sacdb.rooms WHERE Name=?",
+      [id, room],
+      (err, result) => {
+        if (err) {
+          res.json({ error: err });
+        }
+        res.json(result);
+      }
+    );
   } catch (err) {
     console.log(err);
   }

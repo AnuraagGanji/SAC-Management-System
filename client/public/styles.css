@@ -1,6 +1,7 @@
 .studentCards {
   display:flex;
   flex-direction: row;
+  flex-wrap: wrap;
   margin: 3% 3% 5% 5%;
 }
 

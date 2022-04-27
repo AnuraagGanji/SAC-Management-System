@@ -43,16 +43,14 @@ export default function AdminHistory(props) {
         accessToken: localStorage.getItem("accessToken"),
       },
     }).then((response) => {
-      // console.log("something");
       if (response.data.error) {
         console.log(response.data.error);
         // alert(response.data.error); // Why doesn't this give me the error which I set in middleware
         alert("Please log in");
         navigate("../login");
       } else {
-        // console.log("yay");
-        // console.log(response);
-        // setHistory(response.data);
+        // console.log(response.data);
+        setHistory(response.data);
       }
     });
   }, []);

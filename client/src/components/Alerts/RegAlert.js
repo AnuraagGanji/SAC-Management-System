@@ -1,13 +1,35 @@
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
+import Axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function RegAlert(props) {
+  let navigate = useNavigate();
   const [show, setShow] = useState(false);
 
-  function handleRegister() {
+  function handleRegister(event) {
     console.log("lol");
+    const room = props.room;
     // Close the alert box
+    Axios.post(
+      "http://localhost:2000/api/registerRoom",
+      {
+        room: room,
+      },
+      {
+        headers: {
+          accessToken: localStorage.getItem("accessToken"),
+        },
+      }
+    ).then((response) => {
+      if (response.data.error) {
+        alert(response.data.error);
+      } else {
+        alert(`Successfully registered to ${room}`);
+        navigate(0);
+      }
+    });
   }
 
   return (

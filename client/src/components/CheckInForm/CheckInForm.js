@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import "./CheckInForm.css";
-import { capitalize } from "lodash";
 import Axios from "axios";
 
 export default function CheckInForm(props) {
@@ -13,11 +12,26 @@ export default function CheckInForm(props) {
   }
 
   function handleSubmit(event) {
-    // event.preventDefault();
-    Axios.post(`http://localhost:2000/${props.action}`, {
-      bitsID: bitsID,
-      room: props.room,
-    }).then((response) => console.log(response));
+    Axios.post(
+      `http://localhost:2000/api/${props.action}`,
+      {
+        bitsID: bitsID,
+        room: props.room,
+      },
+      {
+        headers: {
+          accessToken: localStorage.getItem("accessToken"),
+        },
+      }
+    ).then((response) => {
+      if (response.data.error) {
+        alert(response.data.error);
+      } else {
+        // console.log(response.data);
+        alert("Success!");
+      }
+    });
+    event.preventDefault();
   }
 
   return (

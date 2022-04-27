@@ -21,7 +21,7 @@ export default function RoomCard(props) {
           props.registered ? (
             <Card.Subtitle>Already Registered!</Card.Subtitle>
           ) : (
-            <RegAlert cost={props.cost} />
+            <RegAlert cost={props.cost} room={props.name} />
           )
         ) : null}
       </Card.Body>
