@@ -308,7 +308,7 @@ router.post("/checkin", validateAdminToken, (req, res) => {
                 });
               } else {
                 db.query(
-                  "SELECT !ISNULL(bitsmail) OR t.TimeLimit='0:00:00' AS registered FROM (SELECT TimeLimit,rooms.roomid AS id FROM rooms LEFT JOIN users ON rooms.RoomID=users.roomID GROUP BY rooms.roomid) AS t LEFT JOIN registered ON t.id=registered.roomid AND registered.bitsmail=? WHERE t.id=?",
+                  "SELECT !ISNULL(bitsmail) OR t.cost=0 AS registered FROM (SELECT cost,rooms.roomid AS id FROM rooms LEFT JOIN users ON rooms.RoomID=users.roomID GROUP BY rooms.roomid) AS t LEFT JOIN registered ON t.id=registered.roomid AND registered.bitsmail=? WHERE t.id=?",
                   [bitsID, roomid],
                   (err, result3) => {
                     if (err) {

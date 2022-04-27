@@ -31,7 +31,8 @@ export default function CheckInForm(props) {
         alert("Success!");
       }
     });
-    event.preventDefault();
+    // event.preventDefault();
+    // If I remove preventDefault, I don't get alerts
   }
 
   return (
