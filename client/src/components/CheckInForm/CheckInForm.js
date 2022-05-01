@@ -24,6 +24,7 @@ export default function CheckInForm(props) {
         },
       }
     ).then((response) => {
+      console.log(response);
       if (response.data.error) {
         alert(response.data.error);
       } else {

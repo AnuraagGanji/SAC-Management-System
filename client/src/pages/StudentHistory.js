@@ -38,9 +38,15 @@ export default function StudentHistory(props) {
     });
   }, []);
 
+  const styles = {
+    textAlign: "center",
+    marginTop: "1%",
+  };
+
   return (
     <div>
       <StudentHeader />
+      <h2 style={styles}>History</h2>
       <HistoryTable historyList={history} />;
     </div>
   );

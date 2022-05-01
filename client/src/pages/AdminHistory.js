@@ -55,9 +55,15 @@ export default function AdminHistory(props) {
     });
   }, []);
 
+  const styles = {
+    textAlign: "center",
+    marginTop: "1%",
+  };
+
   return (
     <div>
       <AdminHeader room={room} />
+      <h2 style={styles}>History</h2>
       <HistoryTable historyList={history} />;
     </div>
   );

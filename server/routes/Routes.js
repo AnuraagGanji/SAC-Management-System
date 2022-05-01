@@ -12,6 +12,18 @@ const {
 
 const saltRounds = 10;
 
+// TODO
+// Implement pages in admin history
+// Implement pop-up when you click register on student dash
+// Require password for editing person limit
+// Restrict admin URLs to only rooms which exist (drop down)
+// Add constraints to password either through form validation or mysql
+// Read about tokens (jwt, etc)
+// Use lodash everywhere for consistency
+// Remove console.logs
+// Ask jaju about random behavior (not giving alerts)
+// Doesn't res.json end the request
+
 const db = mysql.createConnection({
   user: "root",
   host: "localhost",
@@ -47,7 +59,6 @@ router.post("/createUser", (req, res) => {
 
 // API for creating admins (not in main app)
 router.post("/createAdmin", (req, res) => {
-  // TODO in frontend
   const { id, fName, lName, DOB, Address, password } = req.body;
   bcrypt.hash(password, saltRounds).then((hash) => {
     try {
@@ -220,7 +231,7 @@ router.get("/admindash", validateAdminToken, (req, res) => {
   try {
     const { room } = req.user;
     db.query(
-      "SELECT bitsmail, fName, lName, CheckIn, r.Name, CASE WHEN TimeLimit = 0 THEN 0 ELSE SUBTIME(TimeLimit ,CAST((NOW()-CheckIn) AS TIME)) END AS TimeLeft FROM sacdb.users AS u LEFT JOIN sacdb.rooms AS r ON u.RoomID=r.RoomID WHERE r.Name=? AND CheckIn IS NOT NULL",
+      "SELECT bitsmail, fName, lName, CheckIn, r.Name, CASE WHEN TimeLimit = 0 THEN 0 ELSE SUBTIME(TimeLimit ,CAST(TIMEDIFF(NOW(), CheckIn) AS TIME)) END AS TimeLeft FROM sacdb.users AS u LEFT JOIN sacdb.rooms AS r ON u.RoomID=r.RoomID WHERE r.Name=? AND CheckIn IS NOT NULL ORDER BY CheckIn",
       [room],
       (err, result) => {
         if (err) {
@@ -239,9 +250,8 @@ router.get("/admindash", validateAdminToken, (req, res) => {
 router.get("/studenthistory", validateUserToken, (req, res) => {
   try {
     const bitsmail = req.user.id;
-    // TODO get date in readable format
     db.query(
-      "SELECT id, bitsmail as bitsID, fName, lName, RoomName as room, CheckIn as checkIn, CheckOut as checkOut FROM sacdb.history WHERE bitsmail=?",
+      "SELECT id, bitsmail as bitsID, fName, lName, RoomName as room, CheckIn as checkIn, CheckOut as checkOut FROM sacdb.history WHERE bitsmail=? ORDER BY checkOut DESC",
       [bitsmail],
       (err, result) => {
         if (err) {
@@ -258,10 +268,11 @@ router.get("/studenthistory", validateUserToken, (req, res) => {
 
 // API to get admin history data
 router.get("/adminhistory", validateAdminToken, (req, res) => {
+  const { room } = req.user;
   try {
-    // TODO get time in readable format
     db.query(
-      "SELECT id, bitsmail as bitsID, fName, lName, RoomName as room, CheckIn as checkIn, CheckOut as checkOut FROM sacdb.history",
+      "SELECT id, bitsmail as bitsID, fName, lName, RoomName as room, CheckIn as checkIn, CheckOut as checkOut FROM sacdb.history WHERE RoomName=? ORDER BY checkIn DESC",
+      [room],
       (err, result) => {
         if (err) {
           res.json({ error: err });
@@ -286,8 +297,8 @@ router.post("/checkin", validateAdminToken, (req, res) => {
       (err, result1) => {
         if (err) {
           res.json({ error: err });
-        }
-        if (result1[0].cntlimit) {
+        } else if (result1[0].cntlimit) {
+          console.log(result1[0]);
           res.json({
             error:
               "Person limit of the room exceeded. Please wait till someone checks out!",
@@ -300,8 +311,9 @@ router.post("/checkin", validateAdminToken, (req, res) => {
             (err, result2) => {
               if (err) {
                 res.json({ error: err });
-              }
-              if (!result2[0].free) {
+              } else if (result2.length == 0) {
+                res.json({ error: "User doesn't exist!" });
+              } else if (!result2[0].free) {
                 res.json({
                   error:
                     "User is already checked into another room. Check out before checking into other rooms",
@@ -350,7 +362,6 @@ router.post("/checkout", validateAdminToken, (req, res) => {
       "SELECT RoomID FROM sacdb.rooms WHERE Name=?",
       [room],
       (err, result) => {
-        // TODO
         if (err) {
           res.json({ error: err });
         }
@@ -362,6 +373,7 @@ router.post("/checkout", validateAdminToken, (req, res) => {
             if (err) {
               res.json({ error: err });
             }
+            // res.json(result); // test
             db.query(
               "UPDATE sacdb.users SET CheckIn=NULL, RoomID=NULL WHERE bitsmail=? AND RoomID=?",
               [bitsID, roomid],

@@ -1,9 +1,10 @@
 import React from "react";
 import Table from "react-bootstrap/Table";
+import "./tableStyles.css";
 
 export default function HistoryTable(props) {
   return (
-    <Table striped bordered responsive>
+    <Table striped bordered responsive className="historyTable">
       <thead>
         <tr>
           <th>#</th>
@@ -23,8 +24,8 @@ export default function HistoryTable(props) {
             <td>{user.lName}</td>
             <td>{user.bitsID}</td>
             <td>{user.room}</td>
-            <td>{user.checkIn}</td>
-            <td>{user.checkOut}</td>
+            <td>{new Date(user.checkIn).toLocaleString()}</td>
+            <td>{new Date(user.checkOut).toLocaleString()}</td>
           </tr>
         ))}
       </tbody>

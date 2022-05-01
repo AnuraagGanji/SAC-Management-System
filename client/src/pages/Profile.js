@@ -41,6 +41,8 @@ export default function Profile() {
     });
   }, []);
 
+  const d = new Date(profile[0].DOB).toLocaleDateString();
+
   return (
     <div>
       <StudentHeader />
@@ -51,7 +53,7 @@ export default function Profile() {
           <Card.Text>Email: {profile[0].bitsmail}</Card.Text>
           <Card.Text>First Name: {profile[0].fName}</Card.Text>
           <Card.Text>Last Name: {profile[0].lName}</Card.Text>
-          <Card.Text>DOB: {profile[0].DOB}</Card.Text>
+          <Card.Text>DOB: {d}</Card.Text>
           <Card.Text>Address: {profile[0].Address}</Card.Text>
           <Card.Text>
             Phone Numbers:

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import AdminHeader from "../components/Headers/AdminHeader";
 import CheckInForm from "../components/CheckInForm/CheckInForm";
 import ListTable from "../components/Table/ListTable";
 import Axios from "axios";
 import { capitalize } from "lodash";
-import { useNavigate } from "react-router-dom";
 
 export default function AdminDash() {
   const { room } = useParams();
@@ -44,6 +43,7 @@ export default function AdminDash() {
   //   cost: 0,
   // };
   const [users, setUsers] = useState([]);
+
   useEffect(() => {
     Axios.get("http://localhost:2000/api/admindash", {
       headers: {
@@ -59,11 +59,22 @@ export default function AdminDash() {
     });
   }, []);
 
+  const styles = {
+    textAlign: "center",
+    marginTop: "1%",
+  };
+
+  const formStyles = {
+    marginTop: "-2%",
+  };
+
   return (
     <div>
       <AdminHeader room={room} />
-      <h2 className="roomTitle">{capitalize(room)}</h2>
-      <div className="forms">
+      <h2 className="roomTitle" style={styles}>
+        {capitalize(room)}
+      </h2>
+      <div className="forms" style={formStyles}>
         <CheckInForm room={room} button="Check In" action="checkin" />
         <CheckInForm room="" button="Check Out" action="checkout" />
       </div>
